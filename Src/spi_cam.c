@@ -197,6 +197,24 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
   }
 }
 
+const char* OV5642_StatusToString(OV5642_StatusTypeDef status){
+  switch(status){
+    case OV5642_OK:
+      return "OV5642_OK";
+    case OV5642_ERROR:
+      return "OV5642_ERROR";
+    case OV5642_I2C_TIMEOUT:
+      return "OV5642_I2C_TIMEOUT";
+    case OV5642_DCMI_TIMEOUT:
+      return "OV5642_DCMI_TIMEOUT";
+    case OV5642_DCMI_ERROR:
+      return "OV5642_DCMI_ERROR";
+    case OV5642_BUFFER_OVERFLOW:
+      return "OV5642_BUFFER_OVERFLOW";
+  }
+  return "OV5642_UNKNOWN_STATUS";
+}
+
 static void Write_SensorConfigs(const uint16_t config[][2]){
   uint16_t i = 0;
 
