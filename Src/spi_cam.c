@@ -4,6 +4,10 @@
 #include "arduchip.h"
 
 #include <stdio.h>
+#include <string.h>
+
+//Burst FIFO read returns 2 junk bytes before image data (byte clocked in during the 0x3C command + dummy byte)
+#define FIFO_JUNK_BYTES 2
 
 static void Write_SensorConfigs(const uint16_t config[][2]);
 
@@ -50,6 +54,14 @@ OV5642_StatusTypeDef OV5642_TakePicture(uint8_t frame_buffer[], uint32_t *image_
     //Reset read_complete flag
     fifo_read_complete = 0;
     ArduChip_write_reg(0x04, 0x01); //Clear FIFO flag
+
+    //Shift image to start of buffer so consumers can write from index 0.
+    //Done here rather than in the DMA callback to keep the ISR short.
+    if(jpeg_length <= FIFO_JUNK_BYTES)
+      return OV5642_ERROR;
+    jpeg_length -= FIFO_JUNK_BYTES;
+    memmove(frame_buffer, &frame_buffer[FIFO_JUNK_BYTES], jpeg_length);
+
     *image_length = jpeg_length;
     return OV5642_OK;
 }
@@ -183,20 +195,6 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
         ArduChip_read_fifo(remaining, &buffer[bytes_read]);
       }
   }
-}
-
-const char* OV5642_StatusToString(OV5642_StatusTypeDef status){
-  switch(status){
-    case OV5642_OK:
-      return "OV5642_OK";
-    case OV5642_ERROR:
-      return "OV5642_ERROR";
-    case OV5642_SPI_TIMEOUT:
-      return "OV5642_SPI_TIMEOUT";
-    case OV5642_I2C_TIMEOUT:
-      return "OV5642_I2C_TIMEOUT";
-  }
-  return "OV5642_UNKNOWN_STATUS";
 }
 
 static void Write_SensorConfigs(const uint16_t config[][2]){
