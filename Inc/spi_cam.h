@@ -36,6 +36,7 @@ OV5642_StatusTypeDef OV5642_TakePicture(uint8_t frame_buffer[], uint32_t *image_
 OV5642_StatusTypeDef OV5642_SetJpeg();
 OV5642_StatusTypeDef OV5642_SetResolution(OV5642_Resolution res);
 OV5642_StatusTypeDef OV5642_TestSerialConnection();
+const char* OV5642_StatusToString(OV5642_StatusTypeDef status);
 void OV5642_start_next_fifo_chunk(uint8_t *dst, uint32_t total_length);
 
 
